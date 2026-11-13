@@ -1,0 +1,431 @@
+:root {
+  --bg-color: #030712;
+  --card-bg: rgba(13, 20, 36, 0.85);
+  --accent-orange: #fc3d21; /* Naranja oficial NASA */
+  --accent-cyan: #00f0ff;
+  --text-color: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --border-glow: rgba(0, 240, 255, 0.3);
+  --border-radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Courier New', Courier, monospace, 'Segoe UI', sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  background-image: 
+    radial-gradient(white 1px, transparent 0),
+    radial-gradient(rgba(0, 240, 255, 0.15) 1px, transparent 0);
+  background-size: 50px 50px;
+  background-position: 0 0, 25px 25px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ENCABEZADO ESTILO HUD DE MISIÓN */
+.main-header {
+  background-color: rgba(3, 7, 18, 0.9);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 2px solid var(--accent-orange);
+  padding: 1rem 2rem;
+  box-shadow: 0 4px 20px rgba(252, 61, 33, 0.2);
+}
+
+.header-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.logo {
+  font-size: 1.5rem;
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px var(--accent-orange);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-menu {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.nav-btn {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: bold;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+.nav-btn:hover {
+  background-color: rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.nav-btn.active {
+  background-color: var(--accent-orange);
+  border-color: #ff5733;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(252, 61, 33, 0.6);
+}
+
+/* CONTENEDOR PRINCIPAL Y TARJETAS EFECTO SCI-FI */
+.content-container {
+  max-width: 1000px;
+  width: 95%;
+  margin: 2.5rem auto;
+  flex: 1;
+}
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 240, 255, 0.05);
+  position: relative;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Decoración estilo panel técnico en las esquinas de las tarjetas */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 15px;
+  height: 15px;
+  border-top: 2px solid var(--accent-cyan);
+  border-left: 2px solid var(--accent-cyan);
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 15px;
+  height: 15px;
+  border-bottom: 2px solid var(--accent-cyan);
+  border-right: 2px solid var(--accent-cyan);
+}
+
+.card h2 {
+  color: var(--accent-cyan);
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  color: var(--accent-orange);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.hero-image-placeholder {
+  background: linear-gradient(135deg, #0a1128, #101c3d);
+  border-radius: var(--border-radius);
+  padding: 3rem;
+  text-align: center;
+  font-size: 4.5rem;
+  margin: 1.5rem 0;
+  border: 1px dashed var(--accent-cyan);
+  box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.1);
+  animation: pulseGlow 4s infinite alternate;
+}
+
+.card p {
+  line-height: 1.7;
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+  color: #d1d5db;
+}
+
+/* ESTILOS DEL CUENTO INTERACTIVO */
+.story-box {
+  background-color: rgba(3, 7, 18, 0.95);
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  min-height: 250px;
+  margin-top: 1.5rem;
+  box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.1);
+}
+
+.story-controls {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.choice-btn {
+  background-color: rgba(0, 240, 255, 0.05);
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.choice-btn:hover {
+  background-color: var(--accent-cyan);
+  color: #030712;
+  box-shadow: 0 0 15px var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+/* CONTENEDOR DEL JUEGO */
+.game-box {
+  background-color: #02040a;
+  border: 2px solid var(--accent-cyan);
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  width: 100%;
+  margin-top: 1.5rem;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.2);
+  display: flex;
+  justify-content: center;
+}
+
+#phaser-game {
+  width: 800px;
+  height: 600px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#phaser-game canvas {
+  display: block;
+  border-radius: 4px;
+}
+
+/* PIE DE PÁGINA */
+.main-footer {
+  background-color: rgba(3, 7, 18, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 3rem;
+  letter-spacing: 1px;
+}
+
+.main-footer span {
+  color: var(--accent-orange);
+  font-weight: bold;
+}
+
+/* ANIMACIONES */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0% { border-color: rgba(0, 240, 255, 0.3); box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.05); }
+  100% { border-color: rgba(0, 240, 255, 0.8); box-shadow: inset 0 0 25px rgba(0, 240, 255, 0.3); }
+}
+
+@media (max-width: 850px) {
+  .header-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  .nav-menu {
+    width: 100%;
+    justify-content: center;
+  }
+  .card {
+    padding: 1.5rem;
+  }
+}
+
+/* ==========================================
+   ESTILOS ESPECÍFICOS PARA EL JUEGO Y MENÚ ORBITAL
+   ========================================== */
+#sg-root {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 16/9;
+  margin: 16px auto;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  outline: none;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+}
+
+#sg-root:focus-visible { box-shadow: 0 0 0 3px #00f0ff; }
+#sg-root #sg-canvas { position: absolute; inset: 0; }
+#sg-root canvas { display: block; }
+#sg-root #sg-menu, #sg-root #sg-pad, #sg-root #sg-scan { display: none; }
+
+/* Botón de menú */
+#sg-root.in-game #sg-menu {
+  display: block;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 8px 16px;
+  font: bold 14px Arial, sans-serif;
+  color: #fff;
+  background: rgba(27, 42, 73, 0.85);
+  border: 2px solid #00f0ff;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 5;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s;
+}
+#sg-root.in-game #sg-menu:hover {
+  background: #00f0ff;
+  color: #030712;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+}
+
+/* Cruceta y botón ESCANEAR: círculos blancos semitransparentes (siempre visibles en el juego) */
+#sg-root.in-game #sg-pad {
+  --b: clamp(40px, 8vw, 58px);
+  display: grid;
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  grid-template-columns: repeat(3, var(--b));
+  grid-template-rows: repeat(3, var(--b));
+  gap: 6px;
+  z-index: 5;
+}
+
+#sg-root #sg-pad button,
+#sg-root.in-game #sg-scan {
+  padding: 0;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.22);
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  touch-action: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s;
+}
+
+#sg-root #sg-pad button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: bold 22px 'Trebuchet MS', Verdana, sans-serif;
+}
+
+#sg-root #sg-pad [data-dir=up]    { grid-area: 1/2; }
+#sg-root #sg-pad [data-dir=left]  { grid-area: 2/1; }
+#sg-root #sg-pad [data-dir=right] { grid-area: 2/3; }
+#sg-root #sg-pad [data-dir=down]  { grid-area: 3/2; }
+
+#sg-root.in-game #sg-scan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  width: clamp(76px, 14vw, 104px);
+  aspect-ratio: 1;
+  font: bold 13px 'Trebuchet MS', Verdana, sans-serif;
+  z-index: 5;
+}
+
+#sg-root #sg-pad button.on,
+#sg-root.in-game #sg-scan.on {
+  background: rgba(250, 204, 21, 0.5);
+}
+
+/* Menú de pausa */
+#sg-root #sg-pause {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 4, 10, 0.78);
+  backdrop-filter: blur(3px);
+}
+#sg-root.paused #sg-pause { display: flex; }
+
+#sg-root .sg-pause-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(300px, 80%);
+  padding: 24px;
+  background: rgba(13, 20, 36, 0.95);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  border-radius: 8px;
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+}
+#sg-root .sg-pause-box h3 {
+  text-align: center;
+  margin-bottom: 4px;
+  color: #00f0ff;
+  font: bold 22px 'Trebuchet MS', Verdana, sans-serif;
+  letter-spacing: 3px;
+}
+#sg-root .sg-pause-box button {
+  padding: 12px;
+  font: bold 15px Arial, sans-serif;
+  color: #00f0ff;
+  background: rgba(0, 240, 255, 0.05);
+  border: 2px solid #00f0ff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+#sg-root .sg-pause-box button:hover {
+  background: #00f0ff;
+  color: #030712;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+}
+#sg-root .sg-pause-box button.warn { color: #fc3d21; border-color: #fc3d21; background: rgba(252, 61, 33, 0.05); }
+#sg-root .sg-pause-box button.warn:hover { background: #fc3d21; color: #fff; box-shadow: 0 0 12px rgba(252, 61, 33, 0.5); }
