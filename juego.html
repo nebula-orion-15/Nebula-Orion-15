@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Misión de Rescate - Misiones Olvidadas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+</head>
+<body>
+
+  <header class="main-header">
+    <div class="header-container">
+      <a href="index.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="9" fill="#0b3d91"/><ellipse cx="20" cy="20" rx="18" ry="7" fill="none" stroke="#fc3d21" stroke-width="2.5" transform="rotate(-25 20 20)"/><circle cx="34" cy="12" r="3" fill="#fff"/></svg>
+        <span class="logo-text">MISIONES<small>OLVIDADAS</small></span>
+      </a>
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-btn">Inicio</a>
+        <a href="cuento.html" class="nav-btn">El Cuento</a>
+        <a href="juegos.html" class="nav-btn active">Juegos</a>
+      </nav>
+      <div class="pts-chip" title="Puntos acumulados en todos los juegos">⭐ <span data-puntos-global>0</span> <em>PTS</em></div>
+    </div>
+  </header>
+
+  <main class="content-container">
+    <div class="card">
+      <span class="eyebrow">Juego 01 · Exploración</span>
+      <h2>Misión de Rescate Espacial</h2>
+      <p>Usa las flechas del teclado, WASD o los controles en pantalla para escanear las misiones espaciales.</p>
+
+      <div id="sg-root" tabindex="0" aria-label="Videojuego Misión Espacial">
+        <div id="sg-canvas"></div>
+        <button id="sg-menu" type="button">Menú</button>
+        <div id="sg-pad">
+          <button type="button" data-dir="up">▲</button>
+          <button type="button" data-dir="left">◀</button>
+          <button type="button" data-dir="down">▼</button>
+          <button type="button" data-dir="right">▶</button>
+        </div>
+        <button id="sg-scan" type="button">ESCANEAR</button>
+        <div id="sg-pause" role="dialog" aria-label="Menú de pausa">
+          <div class="sg-pause-box">
+            <h3>PAUSA</h3>
+            <button type="button" data-act="resume">▶ Continuar</button>
+            <button type="button" data-act="restart" class="warn">↻ Reiniciar</button>
+            <button type="button" data-act="menu">🏠 Volver al menú</button>
+          </div>
+        </div>
+      </div>
+      <p class="game-hint">Haz clic en el juego. Flechas o WASD para moverte, ESPACIO para escanear.</p>
+      <div class="btn-row" style="margin-top:1.2rem">
+        <a href="juegos.html" class="btn btn-ghost">← Todos los juegos</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="main-footer">
+    <p>Proyecto desarrollado para el <strong>NASA Space Apps Challenge</strong> 🚀</p>
+    <p>Creado por el equipo: <span>Tu Nombre / Nombre de tu Equipo</span></p>
+  </footer>
+
+  <script src="puntos.js"></script>
+  <script src="juego.js"></script>
+</body>
+</html>

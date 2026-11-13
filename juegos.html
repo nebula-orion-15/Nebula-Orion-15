@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juegos - Misiones Olvidadas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="main-header">
+    <div class="header-container">
+      <a href="index.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="9" fill="#0b3d91"/><ellipse cx="20" cy="20" rx="18" ry="7" fill="none" stroke="#fc3d21" stroke-width="2.5" transform="rotate(-25 20 20)"/><circle cx="34" cy="12" r="3" fill="#fff"/></svg>
+        <span class="logo-text">MISIONES<small>OLVIDADAS</small></span>
+      </a>
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-btn">Inicio</a>
+        <a href="cuento.html" class="nav-btn">El Cuento</a>
+        <a href="juegos.html" class="nav-btn active">Juegos</a>
+      </nav>
+      <div class="pts-chip" title="Puntos acumulados en todos los juegos">⭐ <span data-puntos-global>0</span> <em>PTS</em></div>
+    </div>
+  </header>
+
+  <main class="content-container">
+    <div class="page-head">
+      <span class="eyebrow">Centro de entrenamiento</span>
+      <h1>Sala de Juegos</h1>
+      <p>Elige una misión. Los puntos que ganes en cada juego se acumulan en tu marcador global.</p>
+    </div>
+
+    <div class="points-banner">
+      <div>
+        <span class="lbl">Puntos globales acumulados</span>
+        <span class="big" data-puntos-global>0</span>
+      </div>
+      <div class="muted" style="font-size:0.85rem">Se guardan en este navegador.</div>
+    </div>
+
+    <div class="grid-3">
+
+      <!-- JUEGO 1 -->
+      <a class="feature-card" href="juego.html">
+        <div class="icon">🛰️</div>
+        <span class="eyebrow" style="margin-bottom:0.4rem">Juego 01</span>
+        <h3>Misión de Rescate</h3>
+        <p>Conduce tu rover por la Luna, Marte y el espacio profundo. Escanea 10 misiones históricas y evita el agujero negro.</p>
+        <div><span class="tag">Acción</span><span class="tag">Exploración</span></div>
+        <div class="meta">⭐ <span data-puntos-juego="rescate">0</span> pts ganados</div>
+        <div class="go">Jugar →</div>
+      </a>
+
+      <!-- JUEGO 2 -->
+      <a class="feature-card" href="trivia.html">
+        <div class="icon">🧠</div>
+        <span class="eyebrow" style="margin-bottom:0.4rem">Juego 02</span>
+        <h3>Trivia Espacial</h3>
+        <p>10 preguntas al azar de opción múltiple. Tú eliges el tiempo por pregunta… ¡y cuidado con las alarmas rojas!</p>
+        <div><span class="tag">Conocimiento</span><span class="tag">Contrarreloj</span></div>
+        <div class="meta">⭐ <span data-puntos-juego="trivia">0</span> pts ganados</div>
+        <div class="go">Jugar →</div>
+      </a>
+
+      <!-- Para agregar un juego nuevo: copia una tarjeta, cambia el enlace, el texto
+           y el data-puntos-juego (debe coincidir con el id que uses en Puntos.add) -->
+      <div class="feature-card soon">
+        <div class="icon">🔒</div>
+        <span class="eyebrow" style="margin-bottom:0.4rem">Juego 03</span>
+        <h3>Próximamente</h3>
+        <p>Nuevas misiones en camino. Sigue acumulando puntos mientras tanto.</p>
+        <div><span class="tag">En desarrollo</span></div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="main-footer">
+    <p>Proyecto desarrollado para el <strong>NASA Space Apps Challenge</strong> 🚀</p>
+    <p>Creado por el equipo: <span>Tu Nombre / Nombre de tu Equipo</span></p>
+  </footer>
+
+  <script src="puntos.js"></script>
+</body>
+</html>

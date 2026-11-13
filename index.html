@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio - Misiones Olvidadas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="main-header">
+    <div class="header-container">
+      <a href="index.html" class="logo">
+        <svg class="logo-mark" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="9" fill="#0b3d91"/><ellipse cx="20" cy="20" rx="18" ry="7" fill="none" stroke="#fc3d21" stroke-width="2.5" transform="rotate(-25 20 20)"/><circle cx="34" cy="12" r="3" fill="#fff"/></svg>
+        <span class="logo-text">MISIONES<small>OLVIDADAS</small></span>
+      </a>
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-btn active">Inicio</a>
+        <a href="cuento.html" class="nav-btn">El Cuento</a>
+        <a href="juegos.html" class="nav-btn">Juegos</a>
+      </nav>
+      <div class="pts-chip" title="Puntos acumulados en todos los juegos">⭐ <span data-puntos-global>0</span> <em>PTS</em></div>
+    </div>
+  </header>
+
+  <main class="content-container">
+
+    <section class="hero">
+      <div>
+        <span class="eyebrow">NASA Space Apps Challenge</span>
+        <h1>Misiones <span>Olvidadas</span></h1>
+        <div class="tagline">Abandoned but not Forgotten</div>
+        <p class="lead">
+          Desde los años 60 hemos enviado rovers, sondas e instrumentos por todo el sistema solar.
+          Muchos terminaron su trabajo científico, pero siguen ahí afuera, siendo parte de la historia
+          de la exploración espacial. Recorre sus huellas, aprende y juega.
+        </p>
+        <div class="btn-row">
+          <a href="cuento.html" class="btn">📖 Comenzar el cuento</a>
+          <a href="juegos.html" class="btn btn-ghost">🎮 Ir a los juegos</a>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="planet"></div>
+        <div class="orbit-moon"></div>
+      </div>
+    </section>
+
+    <div class="stats-strip">
+      <div class="stat"><strong>10</strong><span>Misiones</span></div>
+      <div class="stat"><strong>3</strong><span>Destinos</span></div>
+      <div class="stat"><strong>2</strong><span>Juegos</span></div>
+      <div class="stat"><strong data-puntos-global>0</strong><span>Tus puntos</span></div>
+    </div>
+
+    <h2 class="section-title">Explora la misión</h2>
+    <div class="grid-3">
+      <a class="feature-card" href="cuento.html">
+        <div class="icon">📖</div>
+        <h3>El Cuento</h3>
+        <p>Una historia interactiva donde una unidad de reconocimiento visita los sitios de la Luna y Marte.</p>
+        <div class="go">Leer →</div>
+      </a>
+      <a class="feature-card" href="juego.html">
+        <div class="icon">🛰️</div>
+        <h3>Misión de Rescate</h3>
+        <p>Conduce tu rover, escanea las 10 misiones y huye del agujero negro en el espacio profundo.</p>
+        <div class="go">Jugar →</div>
+      </a>
+      <a class="feature-card" href="trivia.html">
+        <div class="icon">🧠</div>
+        <h3>Trivia Espacial</h3>
+        <p>Preguntas de opción múltiple contra el reloj. ¿Cuánto sabes de la historia del espacio?</p>
+        <div class="go">Jugar →</div>
+      </a>
+    </div>
+
+    <h2 class="section-title">Misiones destacadas</h2>
+    <div class="grid-3">
+      <div class="mission-card"><div class="year">1967</div><h4>Surveyor 3</h4><p>Excavó el suelo lunar con un brazo robótico y envió miles de fotografías.</p></div>
+      <div class="mission-card"><div class="year">1969</div><h4>Apollo 11</h4><p>Los primeros humanos pisan la Luna en el Mar de la Tranquilidad.</p></div>
+      <div class="mission-card"><div class="year">1972</div><h4>Pioneer 10</h4><p>Primera sonda en cruzar el cinturón de asteroides y sobrevolar Júpiter.</p></div>
+      <div class="mission-card"><div class="year">1997</div><h4>Mars Pathfinder</h4><p>Aterrizó con airbags y llevó a Sojourner, el primer rover en Marte.</p></div>
+      <div class="mission-card"><div class="year">2014</div><h4>Kepler K2</h4><p>Siguió cazando exoplanetas usando la presión de la luz solar para apuntar.</p></div>
+      <div class="mission-card"><div class="year">2021</div><h4>Ingenuity</h4><p>El primer vuelo motorizado y controlado en otro planeta.</p></div>
+    </div>
+
+  </main>
+
+  <footer class="main-footer">
+    <p>Proyecto desarrollado para el <strong>NASA Space Apps Challenge</strong> 🚀</p>
+    <p>Creado por el equipo: <span>Tu Nombre / Nombre de tu Equipo</span></p>
+  </footer>
+
+  <script src="puntos.js"></script>
+</body>
+</html>
