@@ -1,8 +1,8 @@
 /* ==========================================================
    puntos.js — Sistema de puntos GLOBAL
-   Se carga en TODAS las páginas (antes que los scripts de los juegos).
-   Guarda los puntos en localStorage para que se acumulen entre juegos
-   y entre visitas.
+   Se carga en TODAS las páginas (después de idioma.js y antes de
+   los scripts de los juegos). Guarda los puntos en localStorage para
+   que se acumulen entre juegos y entre visitas.
 
    Uso desde un juego nuevo:
      Puntos.add(50, 'mi-juego');   // suma puntos
@@ -13,11 +13,17 @@
    En el HTML:
      <span data-puntos-global></span>          -> total global
      <span data-puntos-juego="trivia"></span>  -> puntos de un juego
+
+   Juegos embebidos en un <iframe> (cohete y rompecabezas):
+     La página contenedora llama  Puntos.conectarMarco(iframe, 'id-del-juego')
+     y el juego del iframe envía los puntos con:
+       parent.postMessage({ type: 'puntos', n: 100 }, '*');
    ========================================================== */
 (function (w) {
   'use strict';
 
   var KEY = 'misionesOlvidadas.puntos.v1';
+  var MAX_POR_MENSAJE = 1000;   // tope de seguridad para los juegos embebidos
   var ultimoTotal = null;
 
   function vacio() { return { porJuego: {}, misiones: {} }; }
@@ -34,7 +40,10 @@
 
   var data = cargar();
 
-  function fmt(n) { return Number(n).toLocaleString('es-MX'); }
+  function fmt(n) {
+    var loc = (w.Idioma && w.Idioma.locale) ? w.Idioma.locale() : 'es-MX';
+    return Number(n).toLocaleString(loc);
+  }
 
   function total() {
     return Object.keys(data.porJuego).reduce(function (s, k) { return s + (data.porJuego[k] || 0); }, 0);
@@ -67,6 +76,7 @@
   w.Puntos = {
     total: total,
     juego: juego,
+    refrescar: pintar,
     add: function (n, id) {
       id = id || 'general';
       data.porJuego[id] = Math.max(0, juego(id) + Math.round(n));
@@ -87,9 +97,26 @@
       if (id === 'rescate') data.misiones = {};
       guardar();
     },
-    reiniciarTodo: function () { data = vacio(); guardar(); }
+    reiniciarTodo: function () { data = vacio(); guardar(); },
+
+    /* Carga un juego dentro de un <iframe data-src="..."> y recibe sus puntos */
+    conectarMarco: function (frame, id) {
+      if (!frame) return;
+      var lang = (w.Idioma && w.Idioma.lang) ? w.Idioma.lang : 'es';
+      var src = frame.getAttribute('data-src');
+      frame.src = src + (src.indexOf('?') > -1 ? '&' : '?') + 'lang=' + lang;
+      w.addEventListener('message', function (e) {
+        if (e.source !== frame.contentWindow) return;      // solo mensajes de ESE iframe
+        var d = e.data;
+        if (!d || d.type !== 'puntos') return;
+        var n = Number(d.n);
+        if (!isFinite(n) || n <= 0 || n > MAX_POR_MENSAJE) return;
+        w.Puntos.add(n, id);
+      });
+    }
   };
 
+  /* Sincroniza entre pestañas */
   w.addEventListener('storage', function (e) {
     if (e.key === KEY) { data = cargar(); pintar(); }
   });
