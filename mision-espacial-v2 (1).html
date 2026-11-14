@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Misión espacial: rompecabezas y rover</title>
+</head>
+<body style="margin:0;background:#050b1f;">
+
+<!-- ============ 1) HTML: pega este div donde quieras el juego ============ -->
+<div id="puzzle-nasa"></div>
+
+<!-- ============ 2) CSS (prefijos .sp- y .rv- para no chocar con tu sitio) ============ -->
+<style>
+.sp-app{--sp-navy:#071433;--sp-blue:#0b3d91;--sp-red:#fc3d21;--sp-sun:#ffc83d;--sp-ice:#e8f1ff;
+  font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;color:var(--sp-ice);
+  background:radial-gradient(circle at 20% 0%,#16348a 0,transparent 45%),radial-gradient(circle at 90% 100%,#4a1d6b 0,transparent 40%),var(--sp-navy);
+  padding:clamp(10px,3vw,26px);border-radius:18px;width:100%;max-width:620px;margin:0 auto;box-sizing:border-box;text-align:center}
+.sp-app *{box-sizing:border-box}
+.sp-title{margin:0;font-size:clamp(1.2rem,5vw,1.9rem)}
+.sp-sub{margin:.3rem 0 .8rem;font-size:.92rem;opacity:.85}
+.sp-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:12px}
+.sp-tab{font:inherit;font-size:clamp(.62rem,2.7vw,.8rem);font-weight:700;color:var(--sp-ice);background:#0d2566;border:2px solid transparent;border-radius:10px;padding:.45em .1em;cursor:pointer;line-height:1.2}
+.sp-tab b{display:block;font-size:1.15em;color:var(--sp-sun)}
+.sp-tab.sp-cur{border-color:var(--sp-sun);background:var(--sp-blue)}
+.sp-tab.sp-done b::after{content:" ✓";color:#7dffb0}
+.sp-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px}
+.sp-btn{font:inherit;font-weight:700;border:0;border-radius:999px;padding:.6em 1.2em;cursor:pointer;color:#fff;background:var(--sp-blue);box-shadow:0 3px 0 #06255a}
+.sp-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #06255a}
+.sp-btn.sp-main{background:var(--sp-red);box-shadow:0 3px 0 #a3220f}
+.sp-btn[hidden],.sp-select[hidden]{display:none}
+.sp-select{font:inherit;font-weight:700;border:0;border-radius:999px;padding:.6em 1.2em;cursor:pointer;color:#fff;background:var(--sp-blue);box-shadow:0 3px 0 #06255a}
+.sp-select:focus-visible,.sp-btn:focus-visible,.sp-tab:focus-visible,.sp-piece:focus-visible,.rv-part:focus-visible,.rv-anchor:focus-visible{outline:3px solid var(--sp-sun);outline-offset:2px}
+.sp-stats{display:flex;justify-content:center;gap:18px;margin-bottom:10px;font-weight:700;font-size:.95rem}
+.sp-stats b{color:var(--sp-sun);font-variant-numeric:tabular-nums}
+.sp-stage{position:relative;width:100%;max-width:520px;margin:0 auto}
+
+/* Bloqueo de scroll accidental al arrastrar (táctil) */
+.sp-board,.sp-piece,.rv-area,.rv-anchor,.rv-part{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+
+/* Rompecabezas 5x5 */
+.sp-board{display:grid;gap:2px;width:100%;aspect-ratio:1;padding:4px;background:#0a1f55;border-radius:14px;border:2px solid #2a5bd1}
+.sp-piece{min-width:0;min-height:0;background-repeat:no-repeat;border-radius:4px;cursor:grab;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.sp-piece.sp-ok{box-shadow:inset 0 0 0 2px rgba(120,255,170,.65)}
+.sp-sel{box-shadow:0 0 0 3px var(--sp-sun),0 0 16px var(--sp-sun)!important;z-index:2}
+.sp-drag{cursor:grabbing;z-index:9;box-shadow:0 10px 22px rgba(0,0,0,.55)!important}
+.sp-preview{position:absolute;inset:4px;border-radius:8px;background-size:cover;opacity:0;pointer-events:none;transition:opacity .25s;border:2px dashed var(--sp-sun)}
+.sp-preview.sp-on{opacity:1}
+
+/* Nivel 5: ensamblaje del rover */
+.rv-area{position:relative;width:100%;aspect-ratio:3/2;border-radius:14px;border:2px solid #2a5bd1;overflow:hidden;background:linear-gradient(#0a1f55 0 80%,#8a8074 80%)}
+.rv-anchor{position:absolute;border:2px dashed rgba(255,255,255,.55);border-radius:6px}
+.rv-anchor svg,.rv-part svg{display:block;width:100%;height:100%;pointer-events:none}
+.rv-anchor svg{opacity:.22}
+.rv-anchor.rv-full{border-color:transparent}
+.rv-anchor.rv-full svg{opacity:1}
+.rv-hot{border-color:var(--sp-sun);animation:sp-pulse 1s ease-in-out infinite}
+.rv-tray{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-top:12px;padding:10px;min-height:96px;background:#0a1f55;border-radius:14px;border:2px dashed #2a5bd1}
+.rv-part{position:relative;cursor:grab;width:clamp(46px,calc(var(--w)*.14vw),84px);aspect-ratio:var(--w)/var(--h);border-radius:4px}
+
+.sp-win{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(5,11,31,.88);border-radius:14px;padding:14px;z-index:20}
+.sp-win.sp-on{display:flex;animation:sp-pop .5s cubic-bezier(.2,1.6,.4,1)}
+.sp-rocket{font-size:3rem;animation:sp-fly 1.6s ease-in-out infinite}
+.sp-win h3{margin:0;font-size:clamp(1.2rem,5vw,1.7rem);color:var(--sp-sun)}
+.sp-win p{margin:0 0 8px}
+.sp-hint{margin:.8rem 0 0;font-size:.85rem;opacity:.75}
+.sp-shake{animation:sp-shake .35s}
+@keyframes sp-pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes sp-fly{50%{transform:translateY(-10px) rotate(6deg)}}
+@keyframes sp-shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes sp-pulse{50%{background:rgba(255,200,61,.25)}}
+@media (prefers-reduced-motion:reduce){.sp-win.sp-on,.sp-rocket,.sp-shake,.rv-hot{animation:none}}
+</style>
+
+<!-- ============ 3) JavaScript ============ -->
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Imágenes SVG integradas (sin archivos externos) ---------- */
+  const stars = (s, n, h) => {
+    let o = "";
+    const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+    for (let i = 0; i < n; i++)
+      o += `<circle cx="${(r() * 600) | 0}" cy="${(r() * h) | 0}" r="${(r() * 1.6 + 0.4).toFixed(1)}" fill="#fff" opacity="${(r() * 0.6 + 0.4).toFixed(2)}"/>`;
+    return o;
+  };
+  const earthGrad = '<radialGradient id="a" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#6fc3ff"/><stop offset=".6" stop-color="#1768d1"/><stop offset="1" stop-color="#0a2b73"/></radialGradient>';
+  const SCENES = {
+    earth: () => `<defs>${earthGrad}<radialGradient id="g"><stop offset=".7" stop-color="#5bb4ff" stop-opacity=".5"/><stop offset="1" stop-color="#5bb4ff" stop-opacity="0"/></radialGradient></defs><rect width="600" height="600" fill="#050b1f"/>${stars(7, 90, 600)}<circle cx="300" cy="300" r="270" fill="url(#g)"/><circle cx="300" cy="300" r="200" fill="url(#a)"/><path d="M210 230q40-60 105-40 30 30 0 65-45 5-65 45-35-10-40-70z" fill="#3fae5a"/><path d="M335 330q55-20 85 20 10 55-25 95-40 10-60-35-10-45 0-80z" fill="#3fae5a"/><path d="M240 160q60-30 130-15-60 15-130 15zM230 440q60 20 120 0-60 35-120 0z" fill="#fff" opacity=".8"/><circle cx="505" cy="95" r="34" fill="#d5d5dc"/><circle cx="495" cy="88" r="8" fill="#aaa"/><circle cx="515" cy="108" r="10" fill="#b4b4bb"/>`,
+    mars: () => `<defs><radialGradient id="m" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#f0a070"/><stop offset=".6" stop-color="#c4562b"/><stop offset="1" stop-color="#6b2415"/></radialGradient></defs><rect width="600" height="600" fill="#12081c"/>${stars(21, 80, 600)}<circle cx="300" cy="300" r="205" fill="url(#m)"/><path d="M170 290q50-40 110-10 20 40-30 60-60 5-80-50zM330 370q60-30 110 10-10 50-70 55-50-10-40-65zM300 200q40-25 90 0-30 25-90 0z" fill="#7a2e1c" opacity=".7"/><ellipse cx="300" cy="115" rx="70" ry="16" fill="#fff" opacity=".85"/><circle cx="240" cy="380" r="16" fill="#8a3a20"/><circle cx="380" cy="250" r="11" fill="#8a3a20"/><circle cx="500" cy="100" r="13" fill="#b9a99a"/><circle cx="95" cy="500" r="8" fill="#b9a99a"/>`,
+    saturn: () => `<defs><radialGradient id="s" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#f7e2a8"/><stop offset=".7" stop-color="#d9a85b"/><stop offset="1" stop-color="#8a5a24"/></radialGradient></defs><rect width="600" height="600" fill="#080c24"/>${stars(5, 90, 600)}<g transform="rotate(-18 300 300)" fill="none"><ellipse cx="300" cy="300" rx="270" ry="68" stroke="#e9d5a1" stroke-width="22" opacity=".9"/><ellipse cx="300" cy="300" rx="225" ry="54" stroke="#b79a64" stroke-width="8"/></g><circle cx="300" cy="300" r="120" fill="url(#s)"/><path d="M185 270q115 28 230 0M182 320q118 30 236 0" stroke="#b07d3c" stroke-width="10" fill="none" opacity=".5"/><g transform="rotate(-18 300 300)" fill="none"><path d="M30 300A270 68 0 0 0 570 300" stroke="#e9d5a1" stroke-width="22"/><path d="M75 300A225 54 0 0 0 525 300" stroke="#b79a64" stroke-width="8"/></g>`,
+    moon: () => `<defs><linearGradient id="k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050b1f"/><stop offset="1" stop-color="#2b1850"/></linearGradient>${earthGrad}<linearGradient id="r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9aea0"/><stop offset="1" stop-color="#6d6358"/></linearGradient></defs><rect width="600" height="600" fill="url(#k)"/>${stars(11, 70, 400)}<circle cx="190" cy="170" r="100" fill="url(#a)"/><path d="M130 140q30-35 70-20 20 25 0 40-30 0-45 25-20-15-25-45z" fill="#3fae5a"/><path d="M0 440Q150 400 300 430T600 410V600H0Z" fill="url(#r)"/><ellipse cx="110" cy="540" rx="55" ry="14" fill="#5a5148" opacity=".6"/><ellipse cx="510" cy="500" rx="38" ry="10" fill="#5a5148" opacity=".6"/><g transform="translate(300 345) scale(1.2)"><rect x="10" width="150" height="46" rx="8" fill="#e8e8ee"/><rect x="10" width="150" height="10" rx="5" fill="#fc3d21"/><rect x="-14" y="-14" width="70" height="8" rx="3" fill="#2a5bd1" transform="rotate(-14 20 -10)"/><rect x="120" y="-34" width="8" height="36" fill="#9aa"/><rect x="108" y="-52" width="34" height="20" rx="5" fill="#cfd3dc"/><circle cx="136" cy="-42" r="5" fill="#222"/><g fill="#222" stroke="#999" stroke-width="4"><circle cx="30" cy="66" r="22"/><circle cx="85" cy="66" r="22"/><circle cx="140" cy="66" r="22"/></g></g>`
+  };
+  const toImg = (inner) => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">${inner}</svg>`);
+
+  /* ---------- Niveles ---------- */
+  const LEVELS = [
+    { n: "Tierra", s: "earth" }, { n: "Marte", s: "mars" }, { n: "Saturno", s: "saturn" },
+    { n: "Luna", s: "moon" }, { n: "Rover", rover: true }
+  ];
+
+  /* ---------- Piezas del rover (dibujadas en su propio viewBox) ---------- */
+  const PARTS = {
+    body: { w: 180, h: 50, svg: '<rect width="180" height="50" rx="8" fill="#e8e8ee"/><rect width="180" height="9" rx="4" fill="#fc3d21"/><rect x="14" y="22" width="44" height="14" rx="3" fill="#9aa8c8"/><rect x="120" y="22" width="44" height="14" rx="3" fill="#9aa8c8"/>', name: "Chasis" },
+    panel: { w: 100, h: 28, svg: '<rect width="100" height="28" rx="3" fill="#2a5bd1"/><path d="M33 0V28M66 0V28M0 14H100" stroke="#8fb3ff" stroke-width="1.5"/>', name: "Panel solar" },
+    camera: { w: 40, h: 60, svg: '<rect x="17" y="22" width="6" height="38" fill="#9aa"/><rect x="2" y="2" width="36" height="22" rx="5" fill="#cfd3dc"/><circle cx="28" cy="13" r="6" fill="#222"/><circle cx="28" cy="13" r="2.5" fill="#7cf"/>', name: "Cámara" },
+    antenna: { w: 30, h: 48, svg: '<path d="M15 48V20" stroke="#9aa" stroke-width="4"/><circle cx="15" cy="14" r="13" fill="#ffc83d"/><circle cx="15" cy="14" r="5" fill="#c98f00"/>', name: "Antena" },
+    wheel: { w: 50, h: 50, svg: '<circle cx="25" cy="25" r="23" fill="#222" stroke="#999" stroke-width="3"/><circle cx="25" cy="25" r="8" fill="#777"/><path d="M25 5V45M5 25H45" stroke="#555" stroke-width="3"/>', name: "Rueda" }
+  };
+  /* Zonas de anclaje sobre un lienzo de 300 x 200 */
+  const ANCHORS = [
+    { t: "body", x: 60, y: 85 }, { t: "panel", x: 50, y: 50 }, { t: "camera", x: 195, y: 25 },
+    { t: "antenna", x: 160, y: 37 }, { t: "wheel", x: 65, y: 135 }, { t: "wheel", x: 125, y: 135 }, { t: "wheel", x: 185, y: 135 }
+  ];
+  const partSVG = (t) => `<svg viewBox="0 0 ${PARTS[t].w} ${PARTS[t].h}" preserveAspectRatio="none">${PARTS[t].svg}</svg>`;
+
+  class SpaceMission {
+    /* opts.images = [url1, url2, url3, url4] para usar tus propias fotos en los 4 rompecabezas */
+    constructor(el, opts = {}) {
+      this.root = el; this.imgs = opts.images || []; this.done = new Set();
+      this.drag = null; this.timer = null; this.build(); this.start(0);
+    }
+
+    build() {
+      this.root.innerHTML = `
+        <div class="sp-app">
+          <h2 class="sp-title" data-r="title"></h2>
+          <p class="sp-sub" data-r="sub"></p>
+          <div class="sp-tabs">${LEVELS.map((l, i) => `<button class="sp-tab" data-lv="${i}"><b>${i + 1}</b>${l.n}</button>`).join("")}</div>
+          <div class="sp-bar">
+            <button class="sp-btn sp-main" data-a="reset" data-r="reset">Mezclar de nuevo</button>
+            <select class="sp-select" data-r="dif" aria-label="Dificultad"><option value="3">Fácil · 3×3</option><option value="4">Medio · 4×4</option><option value="5" selected>Experto · 5×5</option></select>
+            <button class="sp-btn" data-a="peek" data-r="peek" aria-pressed="false">Ver modelo</button>
+          </div>
+          <div class="sp-stats"><span>Movimientos: <b data-r="moves">0</b></span><span>Tiempo: <b data-r="time">0:00</b></span></div>
+          <div class="sp-stage">
+            <div data-r="field"></div>
+            <div class="sp-win" data-r="win" role="status"><div class="sp-rocket">🚀</div><h3 data-r="wt"></h3><p data-r="wm"></p><button class="sp-btn sp-main" data-a="next" data-r="next"></button></div>
+          </div>
+          <p class="sp-hint" data-r="hint"></p>
+        </div>`;
+      const q = (n) => this.root.querySelector(`[data-r="${n}"]`);
+      ["title", "sub", "reset", "dif", "peek", "time", "field", "win", "wt", "wm", "next", "hint"].forEach((n) => (this[n] = q(n)));
+      this.tabs = [...this.root.querySelectorAll(".sp-tab")];
+
+      this.root.addEventListener("click", (e) => {
+        const tab = e.target.closest("[data-lv]");
+        if (tab) return this.start(+tab.dataset.lv);
+        const b = e.target.closest("[data-a]");
+        if (b) {
+          if (b.dataset.a === "reset") this.start(this.lv);
+          if (b.dataset.a === "next") this.start((this.lv + 1) % LEVELS.length);
+          if (b.dataset.a === "peek") b.setAttribute("aria-pressed", this.prev.classList.toggle("sp-on"));
+          return;
+        }
+        const a = e.target.closest(".rv-anchor"); /* respaldo táctil: tocar pieza y luego su zona */
+        if (a && this.rover && this.sel) this.place(this.sel, a);
+      });
+      this.dif.addEventListener("change", () => this.start(this.lv));
+      /* Eventos Pointer: unifican ratón, lápiz y pantalla táctil */
+      this.field.addEventListener("pointerdown", (e) => this.onDown(e));
+      this.field.addEventListener("pointermove", (e) => this.onMove(e));
+      this.field.addEventListener("pointerup", (e) => this.onUp(e));
+      this.field.addEventListener("pointercancel", () => this.cancelDrag());
+      this.field.addEventListener("keydown", (e) => this.onKey(e));
+    }
+
+    /* ---------- Control de niveles ---------- */
+    start(i) {
+      this.lv = i; const L = LEVELS[i]; this.rover = !!L.rover;
+      this.moves = 0; this.sec = 0; this.sel = null; this.won = false; this.drag = null;
+      clearInterval(this.timer); this.timer = null;
+      this.win.classList.remove("sp-on");
+      this.title.textContent = `🚀 Nivel ${i + 1}: ${this.rover ? "Ensambla el rover" : L.n}`;
+      this.sub.textContent = this.rover ? "Coloca cada pieza en su lugar para armar el rover." : `Reconstruye la imagen (${this.dif.value}×${this.dif.value}) intercambiando piezas.`;
+      this.reset.textContent = this.rover ? "Reiniciar" : "Mezclar de nuevo";
+      this.peek.hidden = this.rover; this.dif.hidden = this.rover; this.peek.setAttribute("aria-pressed", "false");
+      this.hint.textContent = this.rover
+        ? "Arrastra cada pieza a su zona punteada, o toca la pieza y luego toca su zona."
+        : "Arrastra una pieza sobre otra, o toca dos piezas para intercambiarlas.";
+      this.rover ? this.initRover() : this.initPuzzle(L, i);
+      this.upd();
+    }
+
+    upd() {
+      this.root.querySelector('[data-r="moves"]').textContent = this.moves;
+      this.time.textContent = Math.floor(this.sec / 60) + ":" + String(this.sec % 60).padStart(2, "0");
+      this.tabs.forEach((t, i) => { t.classList.toggle("sp-cur", i === this.lv); t.classList.toggle("sp-done", this.done.has(i)); });
+    }
+
+    startTimer() { if (!this.timer) this.timer = setInterval(() => { this.sec++; this.upd(); }, 1000); }
+
+    finish(title, msg) {
+      this.won = true; clearInterval(this.timer); this.timer = null; this.done.add(this.lv); this.upd();
+      this.wt.textContent = title; this.wm.textContent = msg;
+      this.next.textContent = this.lv < LEVELS.length - 1 ? "Siguiente nivel" : "Volver al inicio";
+      setTimeout(() => this.win.classList.add("sp-on"), 350);
+    }
+
+    stats() { return `${this.moves} movimientos en ${this.time.textContent}.`; }
+
+    /* ---------- Rompecabezas 5x5 ---------- */
+    initPuzzle(L, i) {
+      this.size = +this.dif.value; const n = this.size * this.size;
+      this.image = this.imgs[i] || toImg(SCENES[L.s]());
+      this.order = Array.from({ length: n }, (_, k) => k);
+      do { for (let k = n - 1; k > 0; k--) { const j = (Math.random() * (k + 1)) | 0; [this.order[k], this.order[j]] = [this.order[j], this.order[k]]; } }
+      while (this.solved());
+      this.field.innerHTML = '<div class="sp-board"></div><div class="sp-preview"></div>';
+      this.board = this.field.firstChild; this.prev = this.field.lastChild;
+      this.prev.style.backgroundImage = `url("${this.image}")`;
+      this.render();
+    }
+
+    solved() { return this.order.every((p, i) => p === i); }
+
+    render() {
+      const n = this.size;
+      this.board.style.gridTemplateColumns = `repeat(${n},minmax(0,1fr))`;
+      this.board.style.gridTemplateRows = `repeat(${n},minmax(0,1fr))`;
+      this.board.innerHTML = "";
+      this.order.forEach((piece, pos) => {
+        const el = document.createElement("div"), c = piece % n, r = (piece / n) | 0;
+        el.className = "sp-piece" + (piece === pos ? " sp-ok" : "") + (this.sel === pos ? " sp-sel" : "");
+        el.dataset.pos = pos; el.tabIndex = 0; el.setAttribute("role", "button");
+        el.setAttribute("aria-label", `Pieza ${piece + 1}, posición ${pos + 1}`);
+        el.style.backgroundImage = `url("${this.image}")`;
+        el.style.backgroundSize = `${n * 100}% ${n * 100}%`;
+        el.style.backgroundPosition = `${(c / (n - 1)) * 100}% ${(r / (n - 1)) * 100}%`;
+        this.board.appendChild(el);
+      });
+    }
+
+    swap(a, b) {
+      if (a === b || this.won) return;
+      [this.order[a], this.order[b]] = [this.order[b], this.order[a]];
+      this.moves++; this.sel = null; this.startTimer(); this.upd(); this.render();
+      if (this.solved()) this.finish(`¡Misión ${this.lv + 1} cumplida!`, `Completaste ${LEVELS[this.lv].n} en ${this.stats()}`);
+    }
+
+    pick(pos) {
+      if (this.sel === null) this.sel = pos;
+      else if (this.sel === pos) this.sel = null;
+      else return this.swap(this.sel, pos);
+      this.render();
+    }
+
+    /* ---------- Nivel 5: rover ---------- */
+    initRover() {
+      this.filled = 0;
+      const anchors = ANCHORS.map((a) => { const p = PARTS[a.t];
+        return `<div class="rv-anchor" tabindex="0" role="button" aria-label="Zona: ${p.name}" data-t="${a.t}" style="left:${a.x / 3}%;top:${a.y / 2}%;width:${p.w / 3}%;height:${p.h / 2}%">${partSVG(a.t)}</div>`; }).join("");
+      const list = ANCHORS.map((a) => a.t).sort(() => Math.random() - 0.5);
+      const parts = list.map((t) => `<div class="rv-part" tabindex="0" role="button" aria-label="${PARTS[t].name}" data-t="${t}" style="--w:${PARTS[t].w};--h:${PARTS[t].h}">${partSVG(t)}</div>`).join("");
+      this.field.innerHTML = `<div class="rv-area">${anchors}</div><div class="rv-tray">${parts}</div>`;
+      this.prev = null;
+    }
+
+    hot() {
+      this.field.querySelectorAll(".rv-part").forEach((p) => p.classList.toggle("sp-sel", p === this.sel));
+      this.field.querySelectorAll(".rv-anchor").forEach((a) =>
+        a.classList.toggle("rv-hot", !!this.sel && a.dataset.t === this.sel.dataset.t && !a.classList.contains("rv-full")));
+    }
+
+    selectPart(el) { this.sel = this.sel === el ? null : el; this.hot(); }
+
+    place(el, a) {
+      if (!a || !el || this.won) return;
+      this.moves++; this.startTimer();
+      if (a.dataset.t !== el.dataset.t || a.classList.contains("rv-full")) {
+        this.shake(a); this.upd(); return;
+      }
+      a.classList.add("rv-full"); el.remove(); this.sel = null; this.filled++;
+      this.hot(); this.upd();
+      if (this.filled === ANCHORS.length)
+        this.finish("¡Rover ensamblado!", this.done.size === LEVELS.length ? `¡Completaste las 5 misiones! ${this.stats()}` : `Lo armaste en ${this.stats()}`);
+    }
+
+    shake(el) { el.classList.remove("sp-shake"); void el.offsetWidth; el.classList.add("sp-shake"); }
+
+    /* ---------- Arrastrar (ratón/táctil) y tocar ---------- */
+    onDown(e) {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      const el = e.target.closest(".sp-piece,.rv-part");
+      if (!el || this.won) return;
+      this.drag = { el, x: e.clientX, y: e.clientY, moved: false, rv: el.classList.contains("rv-part") };
+      el.setPointerCapture(e.pointerId);
+    }
+
+    onMove(e) {
+      const d = this.drag; if (!d) return;
+      const dx = e.clientX - d.x, dy = e.clientY - d.y;
+      if (!d.moved && Math.hypot(dx, dy) > 8) { d.moved = true; d.el.classList.add("sp-drag"); if (d.rv && !this.sel) { this.sel = d.el; this.hot(); } }
+      if (d.moved) d.el.style.transform = `translate(${dx}px,${dy}px) scale(1.06)`;
+    }
+
+    onUp(e) {
+      const d = this.drag; if (!d) return; this.drag = null;
+      const el = d.el;
+      if (!d.moved) return d.rv ? this.selectPart(el) : this.pick(+el.dataset.pos);
+      el.style.visibility = "hidden";
+      const under = document.elementFromPoint(e.clientX, e.clientY);
+      el.style.visibility = "";
+      if (d.rv) {
+        el.classList.remove("sp-drag"); el.style.transform = "";
+        const a = under && under.closest(".rv-anchor");
+        if (a) this.place(el, a);
+        this.sel = null; this.hot();
+      } else {
+        const t = under && under.closest(".sp-piece");
+        if (t && this.board.contains(t)) this.swap(+el.dataset.pos, +t.dataset.pos); else this.render();
+      }
+    }
+
+    cancelDrag() {
+      const d = this.drag; if (!d) return; this.drag = null;
+      d.el.classList.remove("sp-drag"); d.el.style.transform = ""; this.sel = null;
+      this.rover ? this.hot() : this.render();
+    }
+
+    onKey(e) {
+      const el = e.target.closest(".sp-piece,.rv-part,.rv-anchor"); if (!el) return;
+      const act = e.key === "Enter" || e.key === " ";
+      if (act) {
+        e.preventDefault();
+        if (el.classList.contains("rv-part")) this.selectPart(el);
+        else if (el.classList.contains("rv-anchor")) { if (this.sel) this.place(this.sel, el); }
+        else { const p = +el.dataset.pos; this.pick(p); const nx = this.board.children[p]; if (nx) nx.focus(); }
+        return;
+      }
+      if (!el.classList.contains("sp-piece")) return;
+      const pos = +el.dataset.pos, n = this.size;
+      const mv = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -n, ArrowDown: n }[e.key];
+      if (mv && pos + mv >= 0 && pos + mv < n * n) { e.preventDefault(); this.board.children[pos + mv].focus(); }
+    }
+  }
+
+  window.SpaceMission = SpaceMission;
+
+  /* ---------- Inicio ---------- */
+  const mount = document.getElementById("puzzle-nasa");
+  if (mount) new SpaceMission(mount /*, { images: ["tierra.jpg", "marte.jpg", "saturno.jpg", "luna.jpg"] } */);
+})();
+</script>
+</body>
+</html>

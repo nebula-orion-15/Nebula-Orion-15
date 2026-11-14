@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Centro de Control NASA: misiones</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== Tokens y base ===== */
+:root{color-scheme:dark;--bg:#080d26;--pn:#131b46;--pn2:#212c68;--ink:#f4f1ff;--mute:#a9b2e8;--sun:#ffc93c;--cor:#ff6b6b;--teal:#2ee6c5;--vio:#8b6bff;--ok:#3ddc84;--bad:#ff4d5e;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0,#2a3490 0,var(--bg) 55%);color:var(--ink);font:18px/1.3 "Baloo 2","Trebuchet MS",system-ui,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:12px}
+h1{font-size:clamp(28px,6vw,44px);margin:4px 0;font-weight:800}h2{font-size:clamp(21px,4.5vw,30px);margin:4px 0;font-weight:800}
+p{margin:5px 0}.sub{color:var(--mute)}.hide{display:none!important}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:4px solid var(--sun);outline-offset:2px}
+.grid{display:grid;gap:12px}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:860px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.g3,.g4{grid-template-columns:1fr}}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+/* Paneles metálicos con tornillos */
+.panel{position:relative;background:linear-gradient(160deg,var(--pn2),var(--pn));border:3px solid #3a4690;border-radius:20px;padding:12px;box-shadow:inset 0 0 0 2px #0b1030,0 6px 18px #0006}
+.panel h3{margin:0 0 8px;font-size:20px}
+.mcard{background:var(--pn);border:3px solid var(--pn2);border-radius:22px;padding:16px;text-align:left;transition:.15s}
+.mcard:hover{transform:translateY(-3px);border-color:var(--sun)}.mcard .big{font-size:54px;line-height:1}.mcard b{display:block;font-size:24px}
+.tag{background:var(--vio);border-radius:99px;padding:1px 12px;font-size:15px;font-weight:700}
+.opt{display:block;width:100%;text-align:left;background:#0e1538;border:3px solid transparent;border-radius:14px;padding:8px 10px;margin-bottom:8px;min-height:62px}
+.opt:hover{border-color:var(--mute)}.opt.sel{border-color:var(--sun);background:#343b8c}.opt small{display:block;color:var(--mute);font-size:14px;line-height:1.15}
+.bar{display:grid;grid-template-columns:96px 1fr 56px;gap:8px;align-items:center;margin:5px 0}
+.trk{height:16px;background:#050820;border-radius:99px;border:2px solid #2c3677;overflow:hidden}.fl{height:100%;width:0;border-radius:99px;transition:width .15s,background .2s}
+.hint{background:#3b2a58;border-left:8px solid var(--sun);border-radius:12px;padding:6px 10px;margin:7px 0}.hint.good{background:#12473a;border-color:var(--ok)}
+.hint.warn{background:#5a1a2a;border-color:var(--bad);animation:blink .8s infinite}
+@keyframes blink{50%{opacity:.55}}
+.btn{background:linear-gradient(#ffd75e,var(--sun));color:#2b2100;font-weight:800;font-size:23px;border-radius:18px;padding:12px 24px;min-height:60px;box-shadow:0 6px 0 #b98a00}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #b98a00}.btn:disabled{background:#4a5090;color:#9aa1d8;box-shadow:0 6px 0 #2b3170;cursor:not-allowed}
+.ghost{background:var(--pn2);border-radius:14px;padding:8px 16px;font-weight:700;min-height:46px}
+/* ===== Cabina ===== */
+.cockpit{display:grid;grid-template-columns:minmax(0,420px) 1fr;gap:12px;align-items:start}
+@media(max-width:860px){.cockpit{grid-template-columns:1fr}}
+.cvwrap{position:relative;max-width:420px;margin:0 auto}
+canvas{display:block;width:100%;aspect-ratio:400/560;max-height:62vh;border-radius:18px;border:4px solid #3a4690;background:#000;touch-action:none;margin:0 auto}
+.alert{position:absolute;left:8px;right:8px;top:8px;background:#7a1020ee;border:3px solid var(--bad);border-radius:12px;padding:4px 10px;text-align:center;font-weight:800;animation:blink .5s infinite}
+.alert.info{background:#7a4a00ee;border-color:var(--sun)}
+#toast{position:absolute;left:0;right:0;top:46%;text-align:center;font-size:26px;font-weight:800;color:var(--sun);text-shadow:0 2px 8px #000;pointer-events:none;opacity:0}
+#toast.go{animation:tst 2.2s}@keyframes tst{0%{opacity:0;transform:scale(.7)}12%,75%{opacity:1;transform:scale(1)}100%{opacity:0}}
+.ctl{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;max-width:420px;margin:10px auto 0}
+.ctl button{background:var(--pn2);border:3px solid #4a57b5;border-radius:18px;min-height:68px;font-size:22px;font-weight:800;user-select:none;-webkit-user-select:none;touch-action:none}
+.ctl button.on{background:var(--cor);transform:translateY(3px)}.ctl .acc{background:#2a6a4a}
+.leds{display:flex;gap:10px;flex-wrap:wrap}.leds span{display:flex;align-items:center;gap:5px;font-size:15px}
+.led{width:14px;height:14px;border-radius:50%;background:#333;box-shadow:inset 0 0 3px #000}
+.led.g{background:var(--ok);box-shadow:0 0 10px var(--ok)}.led.a{background:var(--sun);box-shadow:0 0 10px var(--sun)}.led.r{background:var(--bad);box-shadow:0 0 12px var(--bad);animation:blink .5s infinite}
+#rad{border-radius:50%;border:3px solid #3a4690;width:104px;height:104px}
+.spd{text-align:center;border:3px solid var(--ok);background:#12473a;border-radius:16px;padding:4px;margin:8px 0;transition:.2s}
+.spd.bad{border-color:var(--bad);background:#5a1a2a}.spd b{font-size:30px}.spd span{display:block;font-size:14px;color:var(--mute);line-height:1}
+.chip{display:inline-block;background:#0e1538;border-radius:12px;padding:4px 10px;margin:3px}
+/* ===== Reporte NASA ===== */
+#rep{position:fixed;inset:0;background:#040618e6;overflow:auto;padding:14px;z-index:9}
+.card{max-width:680px;margin:0 auto;background:var(--pn);border:4px solid var(--sun);border-radius:24px;padding:16px}
+.card h3{color:var(--sun);margin:12px 0 4px;font-size:20px}.stars{font-size:36px;letter-spacing:4px}
+.cb{display:grid;grid-template-columns:150px 1fr 70px;gap:8px;align-items:center;margin:6px 0;font-size:15px}
+.cb .fl{background:linear-gradient(90deg,var(--teal),var(--vio))}
+#mute{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:10;width:52px;height:52px;border-radius:50%;background:var(--pn2);font-size:24px}
+@media(prefers-reduced-motion:reduce){.alert,.led.r,.hint.warn{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section id="s-pick"><h1>🛰️ Centro de Control NASA</h1><p class="sub">Elige una misión real, ensambla tu cohete y pilótalo hasta su destino.</p><div class="grid g3" id="missions"></div></section>
+
+<section id="s-build" class="hide">
+ <div class="row"><h2 id="b-title"></h2><button class="ghost" id="b-back">⬅ Cambiar misión</button></div>
+ <p class="sub" id="b-goal"></p>
+ <div class="panel" style="margin-bottom:10px">
+  <div class="bar"><span>Peso</span><div class="trk"><div class="fl" id="f-w" style="background:var(--cor)"></div></div><b id="n-w">0</b></div>
+  <div class="bar"><span>Potencia</span><div class="trk"><div class="fl" id="f-p" style="background:var(--teal)"></div></div><b id="n-p">0</b></div>
+  <div class="bar"><span>Potencia/peso</span><div class="trk"><div class="fl" id="f-r"></div></div><b id="n-r">0</b></div>
+ </div>
+ <div class="grid g4" id="mods"></div><div id="hints"></div>
+ <div class="row" style="margin-top:8px"><span class="sub" id="b-status"></span><button class="btn" id="launch" disabled>🚀 ¡Despegar!</button></div>
+</section>
+
+<section id="s-fly" class="hide"><div class="cockpit">
+ <div>
+  <div class="row"><b id="phase" style="font-size:20px"></b><button class="ghost" id="f-back">⬅ Salir</button></div>
+  <div class="cvwrap"><canvas id="cv" width="400" height="560" aria-label="Pantalla de vuelo"></canvas><div id="alert" class="alert hide"></div><div id="toast"></div></div>
+  <div class="ctl">
+   <button data-k="L" id="bL">◀</button><button data-k="R" id="bR">▶</button>
+   <button data-k="brk">⏬ Frenar</button><button data-k="acc" class="acc">⏫ Acelerar</button>
+  </div>
+  <p class="sub" style="text-align:center;font-size:15px" id="keys"></p>
+ </div>
+ <div class="panel">
+  <div class="row" style="justify-content:flex-start"><canvas id="rad" width="104" height="104"></canvas>
+   <div class="leds"><span><i class="led" id="ld-m"></i>Motor</span><span><i class="led g" id="ld-e"></i><span id="pw">Energía</span></span><span><i class="led" id="ld-a"></i>Alerta</span><span><i class="led" id="ld-s"></i>Etapa 1</span></div></div>
+  <div class="spd" id="spd"><span>Velocidad</span><b id="v-spd">0</b></div>
+  <div id="met"></div>
+ </div>
+</div></section>
+<div id="rep" class="hide"></div>
+</div>
+<button id="mute" aria-label="Sonido">🔊</button>
+
+<script>
+"use strict";
+/* ===== Utilidades ===== */
+const $=s=>document.querySelector(s),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a);
+const mix=(a,b,t)=>"rgb("+a.map((v,i)=>Math.round(v+(b[i]-v)*t)).join(",")+")";
+const show=id=>{["pick","build","fly"].forEach(k=>$("#s-"+k).classList.toggle("hide",k!==id));$("#rep").classList.add("hide");scrollTo(0,0)};
+
+/* ===== Datos: módulos del cohete (w = peso, thr = empuje) ===== */
+const MODS={
+ engine:{t:"1 · Fase inferior (motor)",items:[
+  {id:"saturn",ic:"🚀",n:"Cohete Saturno V",d:"Muchísima potencia, pesado",w:90,thr:300,fuel:100,ramp:3},
+  {id:"liquid",ic:"⛽",n:"Motor de combustible líquido",d:"Balanceado",w:60,thr:210,fuel:100,ramp:3},
+  {id:"ion",ic:"✨",n:"Propulsor iónico",d:"Ligero, acelera poco a poco",w:25,thr:115,fuel:150,ramp:.7}]},
+ payload:{t:"2 · Fase superior (carga)",items:[
+  {id:"apollo",ic:"🚙",n:"Rover Apollo 15",d:"Vehículo lunar",w:40},
+  {id:"mars",ic:"🤖",n:"Rovers gemelos Spirit/Opportunity",d:"Robots geólogos",w:30},
+  {id:"pioneer",ic:"📡",n:"Sonda Pioneer 10",d:"Antena para el espacio lejano",w:25}]},
+ power:{t:"3 · Sistema de energía",items:[
+  {id:"cell",ic:"🔋",n:"Celdas de combustible",d:"Energía para pocos días",w:20},
+  {id:"solar",ic:"☀️",n:"Paneles solares extensibles",d:"Energía del Sol",w:15},
+  {id:"rtg",ic:"☢️",n:"Generador nuclear (RTG)",d:"Calor que se vuelve electricidad",w:25}]},
+ guard:{t:"4 · Aterrizaje / protección",items:[
+  {id:"retro",ic:"🔻",n:"Retrofrenos computarizados",d:"Cohetes que frenan la caída",w:20},
+  {id:"bags",ic:"🎈",n:"Airbags + paracaídas",d:"Amortiguan el golpe",w:25},
+  {id:"shield",ic:"🛡️",n:"Escudo térmico y anti-impactos",d:"Aguanta calor y rocas",w:25}]}
+};
+const find=(k,id)=>MODS[k].items.find(i=>i.id===id);
+const MISSIONS=[
+{id:"moon",emoji:"🌕",name:"Apollo 15",dest:"la Luna",
+ goal:"Lleva el primer vehículo lunar a la superficie. En la Luna no hay aire: solo los cohetes pueden frenarte.",
+ ok:{payload:"apollo",power:"cell",guard:"retro"},
+ hints:{mars:"Esos rovers son para Marte. Apollo 15 lleva su propio vehículo lunar.",pioneer:"Pioneer 10 es una sonda para el espacio lejano, no un rover.",solar:"Los paneles no hacen falta: la misión dura solo unos días.",rtg:"El RTG es para misiones de años, muy lejos del Sol.",bags:"En la Luna no hay aire, así que paracaídas y airbags no frenan. Usa retrofrenos.",shield:"Rumbo a la Luna no hay asteroides ni atmósfera. Necesitas frenar con retrofrenos."},
+ logi:"El motor da la fuerza para salir de la Tierra. En la Luna no hay atmósfera: solo los retrofrenos pueden frenar el módulo. Las celdas de energía bastan para una misión de pocos días.",
+ date:"Julio–agosto de 1971",
+ facts:[["Km con el rover",27.9,30,"27.9 km"],["Kg de rocas traídas",77,100,"77 kg"],["Horas caminando",18.5,30,"18.5 h"]],
+ why:"El rover se quedó en la Luna: la cabina de regreso era pequeñita y debía cargar a los astronautas y 77 kg de rocas. Dejarlo ahorró peso. Todavía está estacionado cerca de los Apeninos lunares."},
+{id:"mars",emoji:"🔴",name:"Spirit y Opportunity",dest:"Marte",
+ goal:"Aterriza dos rovers solares. Entrarás muy rápido a la atmósfera: se pone al rojo vivo, abre el paracaídas y rebota en airbags.",
+ ok:{payload:"mars",power:"solar",guard:"bags"},
+ hints:{apollo:"Ese rover es lunar. Marte necesita los rovers gemelos.",pioneer:"Pioneer 10 es una sonda que pasa de largo, no aterriza.",cell:"Las celdas gastan combustible y los rovers deben trabajar meses. En Marte hay Sol.",rtg:"Un RTG pesa mucho para rovers pequeños y en Marte sí llega luz solar.",retro:"Los retrofrenos gastan muchísimo combustible. Marte tiene aire: usa airbags y paracaídas.",shield:"El calor se aguanta con el casco de entrada, pero para tocar suelo necesitas airbags."},
+ logi:"Al entrar a Marte, la fricción con el aire calienta la nave y la frena. Luego un paracaídas y los airbags amortiguan el golpe sin gastar combustible. Los paneles solares dan energía cada día.",
+ date:"Enero de 2004",
+ facts:[["Días planeados",90,5200,"90 soles"],["Spirit trabajó",2210,5200,"2,210 soles"],["Opportunity trabajó",5111,5200,"5,111 soles"]],
+ why:"Spirit quedó atorado en arena suave y dejó de comunicarse en 2010. Opportunity trabajó hasta 2018, cuando una tormenta de polvo tapó sus paneles solares. Nadie podía ir a limpiarlos ni a repararlos: se quedaron en Marte como estaciones científicas."},
+{id:"pioneer",emoji:"🌌",name:"Pioneer 10",dest:"el espacio profundo",
+ goal:"Cruza el cinturón de asteroides y acelera hasta la velocidad de escape del Sistema Solar. ¡Allá lejos casi no hay luz!",
+ ok:{payload:"pioneer",power:"rtg",guard:"shield"},
+ hints:{apollo:"Ese rover es para la Luna. Aquí va una sonda.",mars:"Esos robots son para Marte. Aquí va una sonda para el espacio lejano.",cell:"Las celdas se agotarían pronto y el viaje dura años.",solar:"¡Allá lejos el Sol casi no brilla! Los paneles no darían energía.",retro:"Pioneer 10 no aterriza: pasa de largo. Necesita protección.",bags:"No hay suelo donde rebotar. Elige protección contra las rocas."},
+ logi:"El impulsor te saca de la Tierra y te da velocidad. El RTG convierte el calor del plutonio en electricidad sin necesitar luz. El escudo protege la sonda de las rocas del cinturón.",
+ date:"Marzo de 1972",
+ facts:[["Años con señal",31,35,"31 años"],["Distancia (Tierra–Sol = 1)",80,100,"80 veces"],["Velocidad (km/s)",12,20,"12 km/s"]],
+ why:"Pioneer 10 no puede frenar: en el espacio no hay nada que la detenga. Su última señal llegó el 23 de enero de 2003, cuando su energía ya era muy débil, pero sigue viajando hacia las estrellas."}
+];
+
+/* ===== Pantalla de selección y ensamblaje ===== */
+let M=null,sel={},G=null,raf=0,last=0,muted=false;
+$("#missions").innerHTML=MISSIONS.map((m,i)=>`<button class="mcard" data-i="${i}"><span class="big">${m.emoji}</span><b>${m.name}</b><span class="tag">${m.dest}</span><p class="sub">${m.goal.split(".")[0]}.</p></button>`).join("");
+document.querySelectorAll(".mcard").forEach(b=>b.onclick=()=>{M=MISSIONS[b.dataset.i];sel={};renderBuild();show("build")});
+function stats(){let w=0;for(const k in sel)w+=find(k,sel[k]).w;const e=sel.engine?find("engine",sel.engine):null;return{w,thr:e?e.thr:0,twr:e&&w?e.thr/w:0}}
+function renderBuild(){
+ $("#b-title").textContent=M.emoji+" "+M.name+": viaje a "+M.dest;$("#b-goal").textContent=M.goal;
+ $("#mods").innerHTML=Object.keys(MODS).map(k=>`<div class="panel"><h3>${MODS[k].t}</h3>${MODS[k].items.map(i=>`<button class="opt ${sel[k]===i.id?"sel":""}" data-k="${k}" data-id="${i.id}"><b>${i.ic} ${i.n}</b><small>${i.d} · Peso ${i.w}</small></button>`).join("")}</div>`).join("");
+ document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{sel[b.dataset.k]=b.dataset.id;renderBuild()});
+ const S=stats(),all=Object.keys(sel).length===4;
+ $("#f-w").style.width=Math.min(100,S.w/250*100)+"%";$("#n-w").textContent=S.w;
+ $("#f-p").style.width=Math.min(100,S.thr/300*100)+"%";$("#n-p").textContent=S.thr;
+ const rc=S.twr<1.15?"var(--bad)":S.twr<1.4?"var(--sun)":"var(--ok)";
+ $("#f-r").style.width=Math.min(100,S.twr/2*100)+"%";$("#f-r").style.background=rc;$("#n-r").textContent=S.twr.toFixed(2);
+ let hs=[],wrong=0;
+ for(const k of["payload","power","guard"])if(sel[k]&&sel[k]!==M.ok[k]){wrong++;hs.push(`<div class="hint">💡 <b>${find(k,sel[k]).n}:</b> ${M.hints[sel[k]]}</div>`)}
+ const lowTwr=all&&S.twr<1.15;
+ if(lowTwr)hs.push(`<div class="hint warn">⚠️ <b>¡El peso supera la potencia del motor!</b> Con este motor no despegarías. Elige un motor más fuerte o una carga más ligera.</div>`);
+ const ready=all&&!wrong&&!lowTwr;
+ if(ready)hs.push(`<div class="hint good">✅ ¡Cohete listo! Piezas perfectas para esta misión.</div>`);
+ $("#hints").innerHTML=hs.join("");$("#launch").disabled=!ready;
+ $("#b-status").textContent=all?"":"Elige una pieza en cada columna.";
+}
+$("#b-back").onclick=()=>show("pick");$("#launch").onclick=()=>startFlight();
+
+/* ===== Sonido (WebAudio, sin archivos) ===== */
+let AC=null,ng=null,nf=null;
+function snd(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();const b=AC.createBuffer(1,AC.sampleRate,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+ const s=AC.createBufferSource();s.buffer=b;s.loop=true;nf=AC.createBiquadFilter();nf.type="lowpass";ng=AC.createGain();ng.gain.value=0;s.connect(nf);nf.connect(ng);ng.connect(AC.destination);s.start()}catch(e){AC=null}}
+function tone(f,d,type,v,f2){if(!AC||muted)return;const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;o.type=type||"square";o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v||.07,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}
+$("#mute").onclick=()=>{muted=!muted;$("#mute").textContent=muted?"🔇":"🔊";if(ng)ng.gain.value=0};
+
+/* ===== Entradas: teclado y botones táctiles ===== */
+const K={acc:0,brk:0,L:0,R:0},KM={Space:"acc",ArrowUp:"acc",KeyW:"acc",ArrowDown:"brk",KeyS:"brk",ShiftLeft:"brk",ArrowLeft:"L",KeyA:"L",ArrowRight:"R",KeyD:"R"};
+addEventListener("keydown",e=>{if(KM[e.code]&&G&&!$("#s-fly").classList.contains("hide")){e.preventDefault();K[KM[e.code]]=1}});
+addEventListener("keyup",e=>{if(KM[e.code])K[KM[e.code]]=0});
+document.querySelectorAll(".ctl button").forEach(b=>{const k=b.dataset.k,s=v=>{K[k]=v;b.classList.toggle("on",!!v)};
+ b.addEventListener("pointerdown",e=>{e.preventDefault();snd();s(1)});["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,()=>s(0)));b.addEventListener("contextmenu",e=>e.preventDefault())});
+
+/* ===== Instrumentos (HUD) ===== */
+const MET=[["fuel","Combustible","#3ddc84"],["thr","Empuje","#ffc93c"],["alt","Altitud","#2ee6c5"],["gf","Velocidad G","#ff8a2b"],["ang","Inclinación","#8b6bff"],["tmp","Temp. compuerta","#ff6b6b"]];
+$("#met").innerHTML=MET.map(m=>`<div class="bar"><span id="l-${m[0]}">${m[1]}</span><div class="trk"><div class="fl" id="b-${m[0]}" style="background:${m[2]}"></div></div><b id="t-${m[0]}" style="font-size:15px">0</b></div>`).join("");
+function setM(id,f,txt,col){const b=$("#b-"+id);b.style.width=clamp(f,0,1)*100+"%";if(col)b.style.background=col;$("#t-"+id).textContent=txt}
+const toast=t=>{const e=$("#toast");e.textContent=t;e.classList.remove("go");void e.offsetWidth;e.classList.add("go")};
+
+/* ===== Simulación ===== */
+const W=400,H=560,GE=9,VESC=13,cv=$("#cv"),ctx=cv.getContext("2d"),rad=$("#rad").getContext("2d"),stars=Array.from({length:90},()=>[rnd(0,W),rnd(0,H),rnd(.5,2)]);
+function startFlight(){
+ snd();const S=stats(),e=find("engine",sel.engine);
+ G={ph:"launch",e,twr:S.thr/S.w,alt:0,vy:0,vx:0,x:0,ang:0,thr:0,eff:0,fuel:e.fuel,fuelMax:e.fuel,ramp:e.ramp,t:0,pause:0,fade:0,sep:false,deb:null,temp:25,gf:1,maxG:1,chute:false,bags:false,bounce:0,ast:[],sp:3,spn:0,sy:H/2,svy:0,sh:3,flash:0,dist:0,P:[],al:"",aT:0,beep:0,done:false,ascent:100,rho:0};
+ K.acc=K.brk=K.L=K.R=0;$("#phase").textContent="1 · Despegue de la Tierra";$("#pw").textContent=find("power",sel.power).n.split(" ")[0];
+ $("#keys").textContent="Teclado: ↑/Espacio acelera · ↓ frena · ←/→ inclinan la nave";labels();show("fly");toast("¡Encendido!");
+ last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
+}
+function labels(){const b=G.ph==="belt";$("#l-alt").textContent=b?"Vel. de escape":"Altitud";$("#l-ang").textContent=b?"Altura nave":"Inclinación";
+ $("#bL").textContent=b?"⬆ Subir":"◀";$("#bR").textContent=b?"⬇ Bajar":"▶";if(b)$("#keys").textContent="Teclado: ↑/Espacio acelera · ←/→ suben y bajan la nave"}
+function toArrival(){
+ const pct=G.fuel/G.fuelMax;G.ascent=pct;G.ph=M.id==="pioneer"?"belt":"land";G.fuelMax=100;G.fuel=Math.min(100,45+pct*55);G.thr=G.eff=0;G.ramp=3;G.vy=0;G.vx=0;G.x=0;G.ang=0;G.fade=1;
+ if(G.ph==="land"){G.alt=100;G.vy=M.id==="moon"?-8:-24;G.pause=2.2;$("#phase").textContent="2 · Descenso a "+(M.id==="moon"?"la Luna":"Marte");toast(M.id==="moon"?"¡Frena antes de tocar!":"¡Entrada a la atmósfera!")}
+ else{G.pause=1.5;$("#phase").textContent="2 · Cinturón de asteroides";toast("¡Esquiva y acelera!")}
+ labels();
+}
+function loop(now){const dt=Math.min(.04,(now-last)/1000);last=now;if(!G)return;if(!G.done)step(dt);else{G.t+=dt;for(const q of G.P){q.x+=q.vx*dt;q.y+=q.vy*dt;q.l-=dt}G.P=G.P.filter(q=>q.l>0)}draw();hud();if(!G.done||G.P.length)raf=requestAnimationFrame(loop)}
+function emit(x,y,vx,vy,life,size,kind){if(G.P.length<350)G.P.push({x,y,vx,vy,l:life,L:life,s:size,k:kind})}
+function nozzle(rx,ry,d,r){return[rx-d*Math.sin(r),ry+d*Math.cos(r)]}
+function step(dt){
+ G.t+=dt;if(G.flash>0)G.flash-=dt;if(G.fade>0)G.fade-=dt;
+ const p=G.ph,rr=G.ang*Math.PI/180,tilt=K.R-K.L;
+ if(K.acc)G.thr+=dt*1.3;if(K.brk)G.thr-=dt*1.8;G.thr=clamp(G.thr,0,1);if(G.fuel<=0)G.thr=0;
+ G.eff+=(G.thr-G.eff)*Math.min(1,dt*G.ramp);
+ if(p!=="belt"){G.ang+=tilt*70*dt;if(!tilt)G.ang-=Math.sign(G.ang)*Math.min(Math.abs(G.ang),10*dt);G.ang=clamp(G.ang,-60,60)}
+ const live=G.fuel>0?1:0;
+ // partículas
+ for(const q of G.P){q.x+=q.vx*dt;q.y+=q.vy*dt;q.l-=dt}G.P=G.P.filter(q=>q.l>0);
+ if(G.pause>0){G.pause-=dt;if(G.pause<=0&&p==="belt")G.sp=3;return}
+ if(p==="launch"){
+  const aT=GE*G.twr*G.eff*live,ay=aT*Math.cos(rr)-GE,wind=G.alt>0&&G.alt<60?Math.sin(G.t*1.1)*2.4*(1-G.alt/60):0;
+  G.aT=aT;if(G.alt<=0&&ay<0)G.vy=0;else G.vy+=ay*dt;
+  G.vx+=(aT*Math.sin(rr)+wind-.4*G.vx)*dt;if(G.alt<=0)G.vx=0;G.x+=G.vx*dt;G.alt=Math.max(0,G.alt+G.vy*dt);
+  G.fuel-=9*G.eff*dt;G.gf=aT/9+(G.alt<=0?1:0);
+  G.rho=Math.exp(-G.alt/22);G.temp+=(25+G.rho*G.vy*G.vy*3-G.temp)*dt*3;
+  if(!G.sep&&G.alt>=60){G.sep=true;G.twr*=G.w0Ratio||1.25;G.deb={x:W/2+clamp(G.x,-90,90)*1.4,y:330+40,vx:G.vx*.5,vy:60,r:G.ang*Math.PI/180,vr:rnd(-1,1)};toast("¡Separación de etapa!");tone(120,.4,"sawtooth",.1,40);for(let i=0;i<24;i++)emit(G.deb.x,G.deb.y,rnd(-80,80),rnd(-40,80),rnd(.5,1),rnd(3,7),"spark")}
+  if(G.deb){G.deb.y+=G.deb.vy*dt;G.deb.vy+=40*dt;G.deb.x+=G.deb.vx*dt;G.deb.r+=G.deb.vr*dt}
+  if(Math.abs(G.x)>85)return end(false,"El viento te sacó de la ruta. Inclina la nave en contra del viento con ◀ ▶.");
+  if(Math.abs(G.ang)>=58&&G.alt>2)return end(false,"El cohete se inclinó demasiado y perdió el rumbo. Corrige con ◀ ▶.");
+  if(G.alt>=100)return toArrival();
+  if(G.fuel<=0&&G.alt+(G.vy>0?G.vy*G.vy/(2*GE):0)<100)return end(false,"Se acabó el combustible antes de llegar al espacio. Con el motor iónico acelera desde el inicio.");
+ }else if(p==="land"){
+  const mo=M.id==="moon",g=mo?3:5,aT=(mo?10:8)*G.eff*live;G.aT=aT;
+  G.rho=mo?0:clamp(1-G.alt/130,0,1);
+  if(!mo&&!G.chute&&G.alt<65){G.chute=true;toast("¡Paracaídas abierto!");tone(300,.3,"triangle",.1,700)}
+  if(!mo&&!G.bags&&G.alt<20){G.bags=true;toast("¡Airbags inflados!");tone(200,.3,"sine",.12,500)}
+  const drag=mo?0:(G.chute?.03:.007)*G.rho*G.vy*G.vy*(G.vy<0?1:-1);
+  const ay=-g+aT*Math.cos(rr)+drag,ax=aT*Math.sin(rr)+(mo?0:Math.sin(G.t*.9)*.8);
+  G.vy+=ay*dt;G.vx+=ax*dt;G.x=clamp(G.x+G.vx*dt,-120,120);G.alt+=G.vy*dt;G.fuel-=14*G.eff*dt;
+  G.gf=Math.abs(aT+Math.max(0,drag))/9;G.temp+=((mo?25+G.eff*80:25+G.rho*G.vy*G.vy*(G.chute?1.5:6))-G.temp)*dt*3;
+  if(G.alt<=0){G.alt=0;const s=Math.abs(G.vy);
+   if(mo){if(s<=7&&Math.abs(G.ang)<=15)return end(true);return end(false,s>7?"¡Golpe muy fuerte! Llegaste a "+s.toFixed(0)+" m/s y el límite seguro es 7. Frena antes con el motor.":"Aterrizaste muy inclinado. Mantén la nave derecha con ◀ ▶.")}
+   if(s>12)return end(false,"¡Golpe muy fuerte! Tocaste a "+s.toFixed(0)+" m/s y los airbags aguantan hasta 12 m/s. Frena con el motor.");
+   if(s<2.2)return end(true);
+   G.vy=s*.55;G.bounce++;tone(110,.25,"sine",.15,50);for(let i=0;i<16;i++)emit(W/2+G.x,500,rnd(-90,90),rnd(-60,-5),rnd(.4,.9),rnd(5,10),"puff")}
+ }else{
+  // cinturón de asteroides: acelerar hasta la velocidad de escape
+  G.aT=0;const a=1.5*G.eff*live-.12;G.sp=Math.max(1,G.sp+a*dt);G.fuel-=5*G.eff*dt;G.gf=1+G.eff*.5;G.temp+=(-60+G.eff*40-G.temp)*dt;
+  G.svy+=(tilt*430)*dt;G.svy*=1-3*dt;G.sy=clamp(G.sy+G.svy*dt,30,H-30);G.dist+=G.sp*dt;G.spn-=dt;
+  if(G.spn<=0){G.spn=rnd(.5,.9);const r=rnd(12,28);G.ast.push({x:W+r,y:rnd(30,H-30),r,v:110+G.sp*14+rnd(0,40)})}
+  for(const o of G.ast){o.x-=o.v*dt;if(Math.hypot(o.x-80,o.y-G.sy)<o.r+14){o.x=-99;G.sh--;G.sp=Math.max(1,G.sp-1.5);G.flash=.4;toast("¡Impacto!");tone(90,.3,"sawtooth",.12,40);for(let i=0;i<14;i++)emit(80,G.sy,rnd(-90,90),rnd(-90,90),rnd(.3,.7),rnd(2,5),"spark")}}
+  G.ast=G.ast.filter(o=>o.x>-40);
+  if(G.sh<=0)return end(false,"Los asteroides rompieron tu escudo. Sube y baja con ⬆ ⬇ para esquivarlos.");
+  if(G.sp>=VESC)return end(true);
+  if(G.fuel<=0&&G.sp<VESC)return end(false,"Sin combustible: no alcanzaste la velocidad de escape ("+VESC+" km/s). Acelera más seguido y evita choques.");
+ }
+ // humo y fuego del motor
+ const rx=p==="belt"?80:p==="land"?W/2+G.x:W/2+clamp(G.x,-90,90)*1.4,ry=p==="belt"?G.sy:p==="land"?G.ry||300:330;
+ if(G.eff>.05&&G.fuel>0){const d=p==="launch"&&!G.sep?58:14,[nx,ny]=nozzle(rx,ry,d,rr),dx=-Math.sin(rr),dy=Math.cos(rr);
+  for(let i=0;i<3;i++)emit(nx+rnd(-3,3),ny,dx*rnd(80,200)*G.eff+rnd(-20,20),dy*rnd(120,260)*G.eff,rnd(.25,.5),rnd(3,7)*G.eff+2,"fire");
+  if(Math.random()<.5)emit(nx,ny,rnd(-30,30)+dx*60,dy*80,rnd(.8,1.5),rnd(5,10),"smoke")}
+ if(p==="land"&&!M.id.startsWith("moon")&&G.rho*G.vy*G.vy>90&&!G.chute)for(let i=0;i<3;i++)emit(rx+rnd(-14,14),ry+30,rnd(-30,30),rnd(-200,-90),rnd(.3,.6),rnd(4,9),"fire");
+ alerts(dt);
+ if(ng&&!muted){ng.gain.value=.22*G.eff*live;nf.frequency.value=250+G.eff*900}
+}
+function alerts(dt){
+ const fp=G.fuel/G.fuelMax;let a="",info=false;
+ if(G.fuel<=0)a="⛔ SIN COMBUSTIBLE";else if(fp<.2)a="⚠ COMBUSTIBLE BAJO";
+ if(G.ph==="land"&&G.pause<=0&&Math.abs(G.vy)>(M.id==="moon"?7:12)&&G.alt<70)a="⚠ VELOCIDAD PELIGROSA: ¡FRENA!";
+ if(!a&&G.temp>900){a="🔥 CALOR EXTREMO: el escudo te protege";info=true}
+ G.al=a;G.alInfo=info;G.beep-=dt;if(a&&!info&&G.beep<=0){G.beep=.7;tone(660,.12,"square",.05)}
+}
+function end(ok,msg){G.done=true;G.ok=ok;if(ng)ng.gain.value=0;if(ok){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.25,"triangle",.1),i*130))}else tone(150,.6,"sawtooth",.12,40);
+ if(!ok)for(let i=0;i<30;i++)emit(W/2,G.ry||330,rnd(-120,120),rnd(-150,40),rnd(.5,1.2),rnd(4,10),"fire");
+ setTimeout(()=>report(ok,msg),ok?700:900)}
+function hud(){
+ const p=G.ph,b=p==="belt",fp=G.fuel/G.fuelMax;
+ setM("fuel",fp,Math.max(0,fp*100).toFixed(0)+"%",fp<.2?"#ff4d5e":"#3ddc84");setM("thr",G.eff,(G.eff*100).toFixed(0)+"%");
+ setM("alt",b?G.sp/VESC:G.alt/100,b?(G.sp/VESC*100).toFixed(0)+"%":G.alt.toFixed(0)+" km");
+ G.maxG=Math.max(G.maxG,G.gf);setM("gf",G.gf/4,G.gf.toFixed(1)+" G");
+ setM("ang",b?1-G.sy/H:(G.ang+60)/120,b?"":G.ang.toFixed(0)+"°");setM("tmp",G.temp/1200,G.temp.toFixed(0)+"°C",G.temp>900?"#ff4d5e":"#ff8a2b");
+ const sp=b?G.sp:Math.abs(G.vy),lim=p==="land"?(M.id==="moon"?7:12):1e9,bad=sp>lim&&G.alt<70;
+ $("#v-spd").textContent=sp.toFixed(b?1:0)+(b?" km/s":" m/s");$("#spd").classList.toggle("bad",bad);
+ const al=$("#alert");al.classList.toggle("hide",!G.al);al.classList.toggle("info",!!G.alInfo);al.textContent=G.al;
+ $("#ld-m").className="led "+(G.eff>.05?"g":"");$("#ld-a").className="led "+(G.al?(G.alInfo?"a":"r"):"g");$("#ld-s").className="led "+(G.sep?"":"a");$("#ld-s").nextSibling.textContent=G.sep?"Etapa 1 lista":"Etapa 1";
+ radar();
+}
+/* ===== Radar animado ===== */
+function radar(){const c=rad,s=52;c.clearRect(0,0,104,104);c.fillStyle="#04170f";c.fillRect(0,0,104,104);c.strokeStyle="#1f7a4a";c.lineWidth=1;[18,34,50].forEach(r=>{c.beginPath();c.arc(s,s,r,0,7);c.stroke()});c.beginPath();c.moveTo(s,2);c.lineTo(s,102);c.moveTo(2,s);c.lineTo(102,s);c.stroke();
+ const a=G.t*3,gr=c.createConicGradient?c.createConicGradient(a,s,s):null;if(gr){gr.addColorStop(0,"rgba(61,220,132,.7)");gr.addColorStop(.12,"rgba(61,220,132,0)");gr.addColorStop(1,"rgba(61,220,132,0)");c.fillStyle=gr;c.beginPath();c.arc(s,s,50,0,7);c.fill()}
+ c.fillStyle="#3ddc84";c.fillRect(s-2,s-2,4,4);c.fillStyle="#ffc93c";
+ if(G.ph==="belt")G.ast.forEach(o=>{const x=s+(o.x-80)/W*100,y=s+(o.y-G.sy)/H*100;if(Math.hypot(x-s,y-s)<50)c.fillRect(x-2,y-2,4,4)});
+ else{const y=s+clamp(G.ph==="land"?G.alt:100-G.alt,0,100)/2-25;c.fillRect(s-24,y,48,2)}}
+
+/* ===== Dibujo ===== */
+function rocket(x,y,r,sc,stage1){
+ ctx.save();ctx.translate(x,y);ctx.rotate(r);ctx.scale(sc,sc);const L=G.ph!=="launch"||!stage1,pl=sel.payload;
+ if(!L){const e=sel.engine,c=e==="saturn"?"#f4f1ff":e==="liquid"?"#9fb4d8":"#e8c25a";ctx.fillStyle=c;ctx.fillRect(-12,6,24,44);ctx.fillStyle="#222";ctx.fillRect(-12,18,24,4);ctx.fillRect(-12,34,24,4);ctx.fillStyle="#ff6b6b";ctx.beginPath();ctx.moveTo(-12,40);ctx.lineTo(-22,56);ctx.lineTo(-12,50);ctx.fill();ctx.beginPath();ctx.moveTo(12,40);ctx.lineTo(22,56);ctx.lineTo(12,50);ctx.fill();ctx.fillStyle="#555";ctx.fillRect(-6,50,12,8)}
+ if(sel.power==="solar"&&G.ph!=="launch"){ctx.fillStyle="#2a5cc4";ctx.fillRect(-34,-18,22,10);ctx.fillRect(12,-18,22,10);ctx.fillStyle="#9ab8ff";ctx.fillRect(-34,-14,22,2);ctx.fillRect(12,-14,22,2)}
+ ctx.fillStyle="#f4f1ff";ctx.fillRect(-9,-30,18,36);ctx.fillStyle="#444";ctx.fillRect(-6,6,12,6);
+ if(pl==="apollo"){ctx.fillStyle="#f0d38a";ctx.beginPath();ctx.moveTo(-9,-30);ctx.lineTo(0,-50);ctx.lineTo(9,-30);ctx.fill();if(G.ph==="land"){ctx.strokeStyle="#f0d38a";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-9,4);ctx.lineTo(-20,20);ctx.moveTo(9,4);ctx.lineTo(20,20);ctx.stroke()}}
+ else if(pl==="mars"){ctx.fillStyle="#7a4a30";ctx.beginPath();ctx.moveTo(-9,-30);ctx.lineTo(0,-48);ctx.lineTo(9,-30);ctx.fill();ctx.fillStyle="#d7d7e0";ctx.beginPath();ctx.arc(0,-24,3,0,7);ctx.fill()}
+ else{ctx.fillStyle="#d9d9e6";ctx.beginPath();ctx.ellipse(0,-38,16,7,0,Math.PI,0);ctx.fill();ctx.fillRect(-1,-38,2,10)}
+ ctx.fillStyle="#2ee6c5";ctx.beginPath();ctx.arc(0,-14,4,0,7);ctx.fill();
+ ctx.restore();
+}
+function lander(){const gy=H-60,y=gy-34-G.alt*(gy-34-110)/100;G.ry=y;return y}
+function draw(){
+ ctx.clearRect(0,0,W,H);const p=G.ph;let rx,ry,rr=G.ang*Math.PI/180;
+ if(p==="launch"){
+  const k=clamp(G.alt/80,0,1);let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,mix([6,8,28],[72,150,235],1-k));g.addColorStop(1,mix([10,14,40],[175,218,255],1-k));ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="rgba(255,255,255,"+k+")";stars.forEach(s=>ctx.fillRect(s[0],s[1],s[2],s[2]));
+  const hy=G.alt<20?380+G.alt*5:480+(G.alt-20),R=Math.max(320,1800-G.alt*15);
+  ctx.save();ctx.shadowColor="rgba(120,190,255,.9)";ctx.shadowBlur=18;ctx.fillStyle=mix([58,140,70],[40,110,200],k);ctx.beginPath();ctx.arc(W/2,hy+R,R,0,7);ctx.fill();ctx.restore();
+  if(G.alt<60){ctx.fillStyle="rgba(255,255,255,.55)";[[60,.0,50],[300,.0,40],[180,.0,60]].forEach((c,i)=>ctx.beginPath()||(ctx.ellipse(c[0],hy+14+i*10,c[2],6,0,0,7),ctx.fill()))}
+  if(hy<H){ctx.fillStyle="#999";ctx.fillRect(W/2-50,hy-6,100,10);ctx.fillStyle="#c0392b";ctx.fillRect(W/2+50,hy-120,10,116);ctx.fillStyle="#eee";ctx.fillRect(W/2+50,hy-90,10,10)}
+  rx=W/2+clamp(G.x,-90,90)*1.4;ry=330;
+  ctx.fillStyle="rgba(255,255,255,.3)";ctx.fillRect(W-22,60,8,300);ctx.fillStyle="#ffc93c";ctx.fillRect(W-22,60+300*(1-G.alt/100),8,300*G.alt/100);
+ }else if(p==="land"){
+  const mo=M.id==="moon",rho=G.rho,gy=H-60,top=gy+G.alt*.35,R=200+(100-G.alt)*30;
+  let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,mo?"#000":mix([8,8,28],[130,70,60],rho*1.3));g.addColorStop(1,mo?"#060612":mix([20,12,30],[225,140,90],rho*1.3));ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="rgba(255,255,255,"+(1-rho)+")";stars.forEach(s=>ctx.fillRect(s[0],s[1],s[2],s[2]));
+  if(mo){ctx.fillStyle="#3a7bd5";ctx.beginPath();ctx.arc(310,90,22,0,7);ctx.fill();ctx.fillStyle="#6fcf97";ctx.fillRect(300,84,10,8)}
+  ctx.save();ctx.shadowColor=mo?"transparent":"rgba(255,170,110,.8)";ctx.shadowBlur=16;ctx.fillStyle=mo?"#8d8a99":"#a8452b";ctx.beginPath();ctx.arc(W/2,top+R,R,0,7);ctx.fill();ctx.restore();
+  ctx.fillStyle="rgba(0,0,0,.2)";[[70,22],[210,34],[320,18]].forEach(c=>{ctx.beginPath();ctx.ellipse(c[0],top+c[1]*(.4+(100-G.alt)/60),c[1]*1.2,c[1]*.3,0,0,7);ctx.fill()});
+  rx=W/2+G.x;ry=lander();
+  const hot=!mo&&rho*G.vy*G.vy>90&&!G.chute;
+  if(hot){const gg=ctx.createRadialGradient(rx,ry+34,4,rx,ry+34,50);gg.addColorStop(0,"rgba(255,220,120,.95)");gg.addColorStop(1,"rgba(255,80,20,0)");ctx.fillStyle=gg;ctx.fillRect(rx-60,ry-20,120,100)}
+  if(G.chute){const cy=ry-80;ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(rx,cy,44,Math.PI,0);ctx.fill();ctx.fillStyle="#ff6b6b";ctx.fillRect(rx-14,cy-42,28,42);ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(rx-44,cy);ctx.lineTo(rx,ry-30);ctx.lineTo(rx+44,cy);ctx.stroke()}
+ }else{
+  ctx.fillStyle="#04061a";ctx.fillRect(0,0,W,H);const o=(G.t*(40+G.sp*8))%W;ctx.fillStyle="rgba(255,255,255,.8)";stars.forEach(s=>ctx.fillRect(((s[0]-o)%W+W)%W,s[1],s[2],s[2]));
+  const jr=60+G.dist*.5,jx=W+40-Math.min(G.dist*.4,90),jy=H-70;ctx.save();ctx.beginPath();ctx.arc(jx,jy,jr,0,7);ctx.clip();ctx.fillStyle="#c88b5a";ctx.fillRect(jx-jr,jy-jr,jr*2,jr*2);["#e8c9a0","#9a5f3b","#e0b080","#b8743f"].forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(jx-jr,jy-jr+i*jr*.5+10,jr*2,jr*.18)});ctx.restore();
+  G.ast.forEach(a=>{ctx.fillStyle="#8a8294";ctx.beginPath();ctx.arc(a.x,a.y,a.r,0,7);ctx.fill();ctx.fillStyle="#6c6577";ctx.beginPath();ctx.arc(a.x-a.r*.3,a.y-a.r*.2,a.r*.3,0,7);ctx.fill()});
+  rx=80;ry=G.sy;ctx.save();ctx.translate(rx,ry);ctx.rotate(Math.PI/2);ctx.restore();
+  ctx.strokeStyle="rgba(46,230,197,"+(.25+G.sh*.25)+")";ctx.lineWidth=4;ctx.beginPath();ctx.arc(rx,ry,30,0,7);ctx.stroke();
+  ctx.fillStyle="rgba(255,255,255,.2)";ctx.fillRect(20,H-14,W-40,7);ctx.fillStyle="#3ddc84";ctx.fillRect(20,H-14,(W-40)*clamp(G.sp/VESC,0,1),7);
+  ctx.fillStyle="#fff";ctx.font="700 13px sans-serif";ctx.fillText("🛡️ ".repeat(Math.max(0,G.sh)),12,24);
+ }
+ if(G.deb){ctx.save();ctx.translate(G.deb.x,G.deb.y);ctx.rotate(G.deb.r);ctx.fillStyle="#9fb4d8";ctx.fillRect(-12,0,24,44);ctx.fillStyle="#222";ctx.fillRect(-12,14,24,4);ctx.restore()}
+ if(!(G.done&&!G.ok&&G.t>0&&G.explode))rocket(rx,ry,p==="belt"?0:rr,p==="belt"?.8:p==="land"?1.15:1.5,!G.sep);
+ if(p==="land"&&G.bags){const a=clamp((20-G.alt)/6,0,1);ctx.fillStyle="rgba(255,255,255,.8)";ctx.beginPath();ctx.arc(rx,ry+8,40*a+4,0,7);ctx.fill();ctx.strokeStyle="#aaa";ctx.lineWidth=3;ctx.stroke()}
+ for(const q of G.P){const t=q.l/q.L;ctx.globalAlpha=clamp(t,0,1)*(q.k==="smoke"?.45:.9);ctx.fillStyle=q.k==="fire"?mix([255,90,20],[255,235,110],t):q.k==="smoke"?"#aaa":q.k==="puff"?"#fff":"#ffd27a";ctx.beginPath();ctx.arc(q.x,q.y,q.s*(q.k==="smoke"?2-t:t+.3),0,7);ctx.fill()}
+ ctx.globalAlpha=1;
+ if(G.flash>0){ctx.fillStyle="rgba(255,77,94,.25)";ctx.fillRect(0,0,W,H)}
+ if(G.fade>0){ctx.fillStyle="rgba(0,0,0,"+clamp(G.fade,0,1)+")";ctx.fillRect(0,0,W,H)}
+}
+
+/* ===== Reporte de misión ===== */
+function report(ok,msg){
+ const pct=Math.round(G.fuel/G.fuelMax*100),st=ok?(G.ph==="belt"?clamp(G.sh,1,3):pct>=50?3:pct>=25?2:1):0;
+ $("#rep").innerHTML=ok?`<div class="card"><div class="row"><b>📡 Reporte de misión NASA</b><span class="tag">${M.date}</span></div>
+ <h2>${M.emoji} ¡Misión cumplida: ${M.name}!</h2><div class="stars">${"⭐".repeat(st)}${"☆".repeat(3-st)}</div>
+ <span class="chip">⛽ Combustible final: ${Math.max(0,pct)}%</span><span class="chip">🌀 Máx. ${G.maxG.toFixed(1)} G</span><span class="chip">⏱ ${G.t.toFixed(0)} s</span>
+ <h3>Datos reales de la misión</h3>${M.facts.map(f=>`<div class="cb"><span>${f[0]}</span><div class="trk"><div class="fl" style="width:${f[1]/f[2]*100}%"></div></div><b>${f[3]}</b></div>`).join("")}
+ <h3>¿Cómo funcionó tu logística?</h3><p>${M.logi}</p><h3>¿Por qué se quedó allá?</h3><p>${M.why}</p>
+ <div class="row" style="margin-top:12px"><button class="btn" id="r-next">Otra misión</button><button class="ghost" id="r-again">Volar de nuevo</button></div></div>`
+ :`<div class="card" style="border-color:var(--cor)"><h2>💥 ¡Casi lo logras!</h2><p>${msg}</p><div class="row" style="margin-top:12px"><button class="btn" id="r-again">Intentar de nuevo</button><button class="ghost" id="r-edit">Cambiar piezas</button><button class="ghost" id="r-next">Otra misión</button></div></div>`;
+ $("#rep").classList.remove("hide");
+ $("#r-next").onclick=()=>show("pick");$("#r-again").onclick=startFlight;if($("#r-edit"))$("#r-edit").onclick=()=>show("build");
+}
+$("#f-back").onclick=()=>{if(G){G.done=true;G.P=[]}if(ng)ng.gain.value=0;show("build")};
+</script>
+</body>
+</html>
